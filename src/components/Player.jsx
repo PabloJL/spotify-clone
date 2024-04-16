@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { usePlayerStore } from "@/store/playerStore";
 
 export const Pause = () => (
   <svg role="img" height="16" width="16" aria-hidden="true" viewBox="0 0 16 16">
@@ -44,7 +45,7 @@ export const Volume = () => (
 );
 
 export default function Player() {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const { isPlaying, setIsPlaying } = usePlayerStore((state) => state);
   const [currentSong, setCurrentSong] = useState(null);
   const audioRef = useRef();
 
