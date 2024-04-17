@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { usePlayerStore } from "@/store/playerStore";
+import { Slider } from "./Slider";
 
 export const Pause = () => (
   <svg role="img" height="16" width="16" aria-hidden="true" viewBox="0 0 16 16">
@@ -44,6 +45,28 @@ export const Volume = () => (
   </svg>
 );
 
+const VolumeControl = () => {
+  const volume = usePlayerStore((state) => state.volume);
+  const setVolume = usePlayerStore((state) => state.setVolume);
+
+  return (
+    <div className="flex justify-center gap-x-2">
+      {volume === 0 ? <VolumeSilence /> : <Volume />}
+      <Slider
+        defaultValue={[100]}
+        max={100}
+        min={0}
+        className="w-[95px]"
+        onValueChange={(value) => {
+          const [newVolume] = value;
+          const volumeValue = newVolume / 100;
+          setVolume(volumeValue);
+        }}
+      />
+    </div>
+  );
+};
+
 const CurrentSong = ({ image, title, artists }) => {
   return (
     <div className={`flex items-center gap-5 relative overflow-hidden`}>
@@ -53,7 +76,7 @@ const CurrentSong = ({ image, title, artists }) => {
         <img src={image} alt={title} />
       </picture>
 
-      <div>
+      <div className="flex flex-col">
         <h3 className="font-semibold text-sm block">{title}</h3>
         <span className="text-xs opacity-80">{artists?.join(", ")}</span>
       </div>
@@ -62,7 +85,7 @@ const CurrentSong = ({ image, title, artists }) => {
 };
 
 export default function Player() {
-  const { isPlaying, setIsPlaying, currentMusic } = usePlayerStore(
+  const { isPlaying, setIsPlaying, currentMusic, volume } = usePlayerStore(
     (state) => state
   );
 
@@ -77,9 +100,14 @@ export default function Player() {
     if (song) {
       const src = `/music/${playlist?.id}/0${song.id}.mp3`;
       audioRef.current.src = src;
+      audioRef.current.volume = volume;
       audioRef.current.play();
     }
   }, [currentMusic]);
+
+  useEffect(() => {
+    audioRef.current.volume = volume;
+  }, [volume]);
 
   const handleClick = () => {
     setIsPlaying(!isPlaying);
@@ -95,11 +123,13 @@ export default function Player() {
           <button className="bg-white rounded-full p-2" onClick={handleClick}>
             {isPlaying ? <Pause /> : <Play />}
           </button>
+          <audio ref={audioRef} />
         </div>
         Reproductor
       </div>
-      <div className="grid place-content-center">Volumen</div>
-      <audio ref={audioRef}></audio>
+      <div className="grid place-content-center">
+        <VolumeControl />
+      </div>
     </div>
   );
 }
